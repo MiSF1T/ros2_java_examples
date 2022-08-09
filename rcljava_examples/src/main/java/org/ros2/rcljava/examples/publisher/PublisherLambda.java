@@ -25,8 +25,8 @@ import org.ros2.rcljava.timer.WallTimer;
 
 public class PublisherLambda extends BaseComposableNode {
   private int count;
-
-  private Publisher<std_msgs.msg.String> publisher;
+  private Publisher<std_msgs.msg.String> publisher1;
+  private Publisher<std_msgs.msg.String> publisher2;
 
   private WallTimer timer;
 
@@ -34,13 +34,21 @@ public class PublisherLambda extends BaseComposableNode {
     super("minmal_publisher");
     this.count = 0;
     // Publishers are type safe, make sure to pass the message type
-    this.publisher = node.<std_msgs.msg.String>createPublisher(std_msgs.msg.String.class, "topic");
+    this.publisher1 = node.<std_msgs.msg.String>createPublisher(std_msgs.msg.String.class, "topic1");
+    this.publisher2 = node.<std_msgs.msg.String>createPublisher(std_msgs.msg.String.class, "topic2");
+
     Callback timerCallback = () -> {
-      std_msgs.msg.String message = new std_msgs.msg.String();
-      message.setData("Hello, world! " + this.count);
-      this.count++;
-      System.out.println("Publishing: [" + message.getData() + "]");
-      this.publisher.publish(message);
+      std_msgs.msg.String msg1 = new std_msgs.msg.String();
+      std_msgs.msg.String msg2 = new std_msgs.msg.String();
+      msg1.setData("Hello Earth, for " + this.count + "th time!");
+      msg2.setData("Hello Mars, for " + (this.count+5) + "th time!");
+      this.count+=10;
+
+      System.out.println("Publisher_1: [" + msg1.getData() + "]");
+      this.publisher1.publish(msg1);
+
+      System.out.println("Publisher_2: [" + msg2.getData() + "]");
+      this.publisher2.publish(msg2);
     };
     this.timer = node.createWallTimer(500, TimeUnit.MILLISECONDS, timerCallback);
   }

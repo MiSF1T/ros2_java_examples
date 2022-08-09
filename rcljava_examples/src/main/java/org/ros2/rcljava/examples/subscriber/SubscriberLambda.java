@@ -15,19 +15,58 @@
 
 package org.ros2.rcljava.examples.subscriber;
 
+import java.util.concurrent.TimeUnit;
+
 import org.ros2.rcljava.RCLJava;
+import org.ros2.rcljava.concurrent.Callback;
+
 import org.ros2.rcljava.consumers.Consumer;
 import org.ros2.rcljava.node.BaseComposableNode;
 import org.ros2.rcljava.subscription.Subscription;
 
+import org.ros2.rcljava.publisher.Publisher;
+import org.ros2.rcljava.timer.WallTimer;
+
+
 public class SubscriberLambda extends BaseComposableNode {
-  private Subscription<std_msgs.msg.String> subscription;
+  private Subscription<std_msgs.msg.String> sub1;
+  private Subscription<std_msgs.msg.String> sub2;
+  private Publisher<std_msgs.msg.String> pub;
+
+  private int pub1_val, pub2_val;
+
+
+  private WallTimer timer;
 
   public SubscriberLambda() {
     super("minimal_subscriber");
-    subscription = node.<std_msgs.msg.String>createSubscription(std_msgs.msg.String.class, "topic",
-        msg -> System.out.println("I heard: [" + msg.getData() + "]"));
+    pub1_val = pub2_val = 0;
+    
+    sub1 = node.<std_msgs.msg.String>createSubscription(std_msgs.msg.String.class, "topic1", this::topicCallback1);
+    sub2 = node.<std_msgs.msg.String>createSubscription(std_msgs.msg.String.class, "topic2", this::topicCallback2);
+
+    this.pub = node.<std_msgs.msg.String>createPublisher(std_msgs.msg.String.class, "addition");
+    
+    Callback timerCallback = () -> {
+      std_msgs.msg.String msg = new std_msgs.msg.String();
+    
+      msg.setData("total greetings: "+ (pub1_val + pub2_val) );
+      System.out.println("Publisher_add: [" + msg.getData() + "]");
+      this.pub.publish(msg);
+    };
+    this.timer = node.createWallTimer(500, TimeUnit.MILLISECONDS, timerCallback);
   }
+
+  private void topicCallback1(final std_msgs.msg.String msg1) {
+    System.out.println("I heard: [" + msg1.getData() + "]");
+    pub1_val =  Integer.parseInt(msg1.getData().replaceAll("[^0-9]", ""));
+  }
+
+  private void topicCallback2(final std_msgs.msg.String msg2) {
+    System.out.println("I heard: [" + msg2.getData() + "]");
+    pub2_val =  Integer.parseInt(msg2.getData().replaceAll("[^0-9]", ""));
+  }
+
 
   public static void main(final String[] args) throws InterruptedException, Exception {
     // Initialize RCL
