@@ -29,10 +29,12 @@ import org.ros2.rcljava.timer.WallTimer;
 
 
 public class SubscriberLambda extends BaseComposableNode {
+  //Decl. 2 subscriptions and one publisher
   private Subscription<std_msgs.msg.String> sub1;
   private Subscription<std_msgs.msg.String> sub2;
   private Publisher<std_msgs.msg.String> pub;
 
+  //vars to retain topic data for use in publisher
   private int pub1_val, pub2_val;
 
 
@@ -40,13 +42,17 @@ public class SubscriberLambda extends BaseComposableNode {
 
   public SubscriberLambda() {
     super("minimal_subscriber");
-    pub1_val = pub2_val = 0;
     
+    pub1_val = pub2_val = 0;  //init topic int data retention vars
+    
+    //Set subscription topic type and name
     sub1 = node.<std_msgs.msg.String>createSubscription(std_msgs.msg.String.class, "topic1", this::topicCallback1);
     sub2 = node.<std_msgs.msg.String>createSubscription(std_msgs.msg.String.class, "topic2", this::topicCallback2);
 
+    //Assign topic type and name to publisher
     this.pub = node.<std_msgs.msg.String>createPublisher(std_msgs.msg.String.class, "addition");
     
+    //Publish addition of data from 2 subscribed topics on addition topic
     Callback timerCallback = () -> {
       std_msgs.msg.String msg = new std_msgs.msg.String();
     
@@ -57,11 +63,13 @@ public class SubscriberLambda extends BaseComposableNode {
     this.timer = node.createWallTimer(500, TimeUnit.MILLISECONDS, timerCallback);
   }
 
+  //Extract the published number from the msg string for topic 1
   private void topicCallback1(final std_msgs.msg.String msg1) {
     System.out.println("I heard: [" + msg1.getData() + "]");
     pub1_val =  Integer.parseInt(msg1.getData().replaceAll("[^0-9]", ""));
   }
 
+  ////Extract the published number from the msg string for topic 2
   private void topicCallback2(final std_msgs.msg.String msg2) {
     System.out.println("I heard: [" + msg2.getData() + "]");
     pub2_val =  Integer.parseInt(msg2.getData().replaceAll("[^0-9]", ""));

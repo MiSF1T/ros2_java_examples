@@ -25,6 +25,7 @@ import org.ros2.rcljava.timer.WallTimer;
 
 public class PublisherLambda extends BaseComposableNode {
   private int count;
+  //Decl 2 publishers
   private Publisher<std_msgs.msg.String> publisher1;
   private Publisher<std_msgs.msg.String> publisher2;
 
@@ -34,9 +35,11 @@ public class PublisherLambda extends BaseComposableNode {
     super("minmal_publisher");
     this.count = 0;
     // Publishers are type safe, make sure to pass the message type
+    // Assign ros2 msg data type and topic name to publishers
     this.publisher1 = node.<std_msgs.msg.String>createPublisher(std_msgs.msg.String.class, "topic1");
     this.publisher2 = node.<std_msgs.msg.String>createPublisher(std_msgs.msg.String.class, "topic2");
 
+    //Publish msg on 2 topics
     Callback timerCallback = () -> {
       std_msgs.msg.String msg1 = new std_msgs.msg.String();
       std_msgs.msg.String msg2 = new std_msgs.msg.String();
